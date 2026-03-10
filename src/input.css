@@ -1,1 +1,201 @@
 @import "tailwindcss";
+
+:root {
+  --accent: #a91667;
+  --accent-1: #3e7a96;
+  --text: #1a1a2e;
+  --text-1: #464c4e;
+  --muted: rgba(26, 26, 46, 0.45);
+  --card-bg: rgba(255, 255, 255, 0.72);
+  --card-border: #97c0d3;
+  --gradient-1: #e1f4fc;
+  --gradient-2: #ccecfa;
+  --gradient-3: #7dd3fc;
+}
+body.night-mode {
+  --accent: #4fc3f7;
+  --text: #e8f4fd;
+  --muted: rgba(232, 244, 253, 0.45);
+  --card-bg: rgba(13, 27, 75, 0.68);
+  --card-border: rgba(79, 195, 247, 0.2);
+}
+body.rainy-mode {
+  --accent: #80cbc4;
+  --text: #eceff1;
+  --muted: rgba(236, 239, 241, 0.45);
+  --card-bg: rgba(28, 43, 53, 0.7);
+  --card-border: rgba(128, 203, 196, 0.2);
+}
+
+.font-outfit {
+  font-family: "Outfit", sans-serif;
+  font-weight: 600;
+}
+
+.pacifico-regular {
+  font-family: "Pacifico", cursive;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--text);
+  transition: color 0.8s;
+}
+
+.font-roboto {
+  font-family: "Roboto Slab", serif;
+  font-style: normal;
+}
+.font-playfair {
+  font-family: "Playfair Display", serif;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.bg-day {
+  background: linear-gradient(65deg, #e1f4fc 0%, #ccecfa 70%, #7dd3fc 100%);
+}
+.bg-night {
+  background: linear-gradient(135deg, #0a0e27 0%, #0d1b4b 45%, #1565c0 100%);
+}
+.bg-rain {
+  /* background: linear-gradient(160deg, #1c2b35 0%, #263238 45%, #455a64 100%);   */
+  background: linear-gradient(160deg, #22243b 0%, #302d3f 45%, #6b6179 100%);
+}
+
+/* Raindrop container */
+.rain-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Single drop */
+.drop {
+  position: absolute;
+  top: -20px;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, #8b889d);
+  border-radius: 0 0 4px 4px;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh);
+  }
+}
+
+/* Recent City Name Commom class  */
+
+.recentCityName {
+  border-radius: 4rem;
+  border: 1px solid var(--card-border);
+  padding: 4px 10px;
+  background: white;
+  font-weight: 600;
+  font-size: smaller;
+}
+
+/* drop down list */
+.dd-item {
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--card-border);
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.dd-item:last-child {
+  border: none;
+}
+.dd-item:hover {
+  background: rgba(255, 107, 53, 0.07);
+  color: var(--accent);
+}
+
+/* Loader */
+.loader {
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  gap: 0.8rem;
+  flex-direction: column;
+}
+.loader.on {
+  display: flex;
+}
+.spin {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px solid var(--card-border);
+  border-top-color: var(--accent);
+  animation: spin 0.9s linear infinite;
+  transition: border-color 0.8s;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-txt {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: color 0.8s;
+}
+
+/* temp unit buttons */
+.u-btn {
+  border: 1.5px solid var(--card-border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.u-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.u-btn:not(.active):hover {
+  scale: 1.1;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* current weather state  */
+.stat {
+  font-size: 0.8rem;
+  color: var(--muted);
+  transition: color 0.8s;
+}
+.stat strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: color 0.8s;
+}
+
+.weather-stat{
+  border-radius: 20px;
+  padding: 10px 20px;
+  background: color-mix(in srgb, var(--accent-1) 20%, transparent);
+  color: var(--accent-1);
+  font-weight: bold;
+}
