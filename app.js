@@ -3,9 +3,12 @@ const KEY = "bdd2f8833eb726760a9d52d4c02475f3";
 const BASE = "https://api.openweathermap.org/data/2.5";
 
 /* local variables */
-let currentTemp = null,
-  currentUnit = "C";
+let currentTemp = null;
+let currentUnit = "C";
+let DbRecent = "skyMist_recent_city";
 
+// function call at browser loads
+renderRecent();
 /*   ====    FETCH MY CURRENT LOCATION WEATHER    ====    */
 
 function myLocation() {
@@ -16,7 +19,7 @@ function myLocation() {
   navigator.geolocation.getCurrentPosition(
     //success
     (position) => {
-      fetchWeatherDetails(position.coords.latitude, position.coords.longitude);
+      createLatLngUrl(position.coords.latitude, position.coords.longitude);
     }, // failure
     () => {
       showToast(
@@ -26,16 +29,42 @@ function myLocation() {
   );
 }
 
-/*    ====    Fetch weather details from coords    ====   */
+/*    ====    pick city name typed by user    ====    */
+function citySearch() {
+  const v = document.getElementById("searchInput").value.trim();
+  if (!v) {
+    showToast("Please enter a city name to search.");
+    return;
+  }
+  createCityUrl(v);
+}
 
-function fetchWeatherDetails(lat, lng) {
-  showLoader();
+function createCityUrl(city) {
+  let weatherURl = `${BASE}/weather?q=${encodeURIComponent(city)}&appid=${KEY}&units=metric`;
+  let forecastURl = `${BASE}/forecast?q=${encodeURIComponent(city)}&appid=${KEY}&units=metric`;
+  fetchWeatherDetails(weatherURl, forecastURl);
+}
+
+function createLatLngUrl(lat, lng) {
   let weatherURl = `${BASE}/weather?lat=${lat}&lon=${lng}&appid=${KEY}&units=metric`;
   let forecastURl = `${BASE}/forecast?lat=${lat}&lon=${lng}&appid=${KEY}&units=metric`;
+  fetchWeatherDetails(weatherURl, forecastURl);
+}
+
+/*    ====    Fetch weather details from coords    ====   */
+function fetchWeatherDetails(weatherURl, forecastURl) {
+  showLoader();
+  // let weatherURl = `${BASE}/weather?lat=${lat}&lon=${lng}&appid=${KEY}&units=metric`;
+  // let forecastURl = `${BASE}/forecast?lat=${lat}&lon=${lng}&appid=${KEY}&units=metric`;
 
   Promise.all([fetch(weatherURl), fetch(forecastURl)])
     .then((responses) => Promise.all(responses.map((res) => res.json())))
     .then(([weatherData, forecastData]) => {
+      if (weatherData.cod != 200) {
+        throw new Error(weatherData.message);
+      } else if (forecastData.cod != 200) {
+        throw new Error(forecastData.message);
+      }
       hideLoader();
       // render(cw, fc);
       displayWeatherDetails(weatherData, forecastData);
@@ -46,10 +75,12 @@ function fetchWeatherDetails(lat, lng) {
       showToast(err.message || "Could not get weather for your location.");
     });
 }
+
 /*  wd = weather data fd= forecast data*/
 function displayWeatherDetails(wd, fd) {
   // set city name on search box
   document.getElementById("searchInput").value = wd.name;
+  addRecentCityName(wd.name);
   //set temp data
   currentTemp = Math.round(wd.main.temp);
   updateTempDisplay();
@@ -63,17 +94,64 @@ function displayWeatherDetails(wd, fd) {
   document.getElementById("city").innerHTML = cityHtml;
   document.getElementById("country").innerText = wd.sys.country;
   //weather condition icon and text
-  const code=wd.weather[0].icon;
+  const code = wd.weather[0].icon;
   document.getElementById("condIcon").textContent = ic(code);
-  document.getElementById('condName').textContent=wd.weather[0].description.replace(/\b\w/g,c=>c.toUpperCase());
+  document.getElementById("condName").textContent =
+    wd.weather[0].description.replace(/\b\w/g, (c) => c.toUpperCase());
   //all the 5 weather conditions
-  document.getElementById('wH').textContent=wd.main.humidity+'%';
-  document.getElementById('wW').textContent=wd.wind.speed+' m/s';
-  document.getElementById('wF').textContent=Math.round(wd.main.feels_like)+'°C';
-  document.getElementById('wV').textContent=wd.visibility?(wd.visibility/1000).toFixed(1)+' km':'—';
-  document.getElementById('wP').textContent=wd.main.pressure+' hPa';
+  document.getElementById("wH").textContent = wd.main.humidity + "%";
+  document.getElementById("wW").textContent = wd.wind.speed + " m/s";
+  document.getElementById("wF").textContent =
+    Math.round(wd.main.feels_like) + "°C";
+  document.getElementById("wV").textContent = wd.visibility
+    ? (wd.visibility / 1000).toFixed(1) + " km"
+    : "—";
+  document.getElementById("wP").textContent = wd.main.pressure + " hPa";
 }
+// fetch recent cities
+function getRecent() {
+  try {
+    return JSON.parse(localStorage.getItem(DbRecent) || "[]");
+  } catch {
+    return [];
+  }
+}
+/* Recent City Name */
+function addRecentCityName(city) {
+  let recent = getRecent();
+  // remove if city already exists
+  recent = recent.filter((c) => c.toLowerCase() !== city.toLowerCase());
 
+  // add city to start
+  recent.unshift(city);
+
+  // keep only 8 cities
+  if (recent.length > 8) {
+    recent = recent.slice(0, 8);
+  }
+  localStorage.setItem(DbRecent, JSON.stringify(recent));
+  renderRecent();
+}
+// display recent city name
+function renderRecent() {
+  const wrapper = document.getElementById("recentWrapper");
+  const arr = getRecent();
+
+  if (!arr.length) {
+    wrapper.innerHTML = "";
+    return;
+  }
+
+  wrapper.innerHTML = arr
+    .map(
+      (city) => `
+    <div class="recentCityName cursor-pointer" onclick="searchCity('${city.replace(/'/g, "\\'")}')">
+      ${city}
+    </div>
+  `,
+    )
+    .join("");
+}
 /* Toast */
 function showToast(msg) {
   document.getElementById("toastMsg").textContent = msg;
