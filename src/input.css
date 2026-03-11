@@ -179,23 +179,59 @@ body.rainy-mode {
 }
 
 /* current weather state  */
-.stat {
-  font-size: 0.8rem;
-  color: var(--muted);
-  transition: color 0.8s;
-}
-.stat strong {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text);
-  transition: color 0.8s;
-}
-
-.weather-stat{
+.weather-stat {
   border-radius: 20px;
   padding: 10px 20px;
   background: color-mix(in srgb, var(--accent-1) 20%, transparent);
   color: var(--accent-1);
+  font-size: medium;
   font-weight: bold;
+}
+
+@media (max-width: 1024px) {
+  .weather-stat {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .weather-stat {
+    font-size: small;
+  }
+}
+
+/* forecast grid */
+.fc-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+}
+@media (max-width: 800px) {
+  .fc-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 500px) {
+  .fc-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.fc-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 1rem 0.75rem;
+  text-align: center;
+  backdrop-filter: blur(20px);
+  transition:
+    transform 0.22s,
+    background 0.22s,
+    border-color 0.8s;
+  animation: riseIn 0.5s ease both;
+  cursor: default;
+}
+.fc-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  background: rgba(255, 255, 255, 0.85);
 }
