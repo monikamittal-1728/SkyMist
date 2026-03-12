@@ -5,10 +5,14 @@ const BASE = "https://api.openweathermap.org/data/2.5";
 /* local variables */
 let currentTemp = null;
 let currentUnit = "C";
-let DbRecent = "skyMist_recent_city";
+let recentCities = "skyMist_recent_city";
+let allRecentCities = "skyMist_all_recent_city";
 
-// function call at browser loads
+/* function call at browser loads */
 renderRecent();
+createCityUrl("new delhi");
+updateClock();
+
 /*   ====    FETCH MY CURRENT LOCATION WEATHER    ====    */
 
 function myLocation() {
@@ -17,15 +21,14 @@ function myLocation() {
     return;
   }
   navigator.geolocation.getCurrentPosition(
-    //success
     (position) => {
       createLatLngUrl(position.coords.latitude, position.coords.longitude);
-    }, // failure
+    },
     () => {
       showToast(
-        "Location access denied. Please allow location permissions and try again.",
+        "Location access denied. Please allow location permissions and try again."
       );
-    },
+    }
   );
 }
 
@@ -51,11 +54,9 @@ function createLatLngUrl(lat, lng) {
   fetchWeatherDetails(weatherURl, forecastURl);
 }
 
-/*    ====    Fetch weather details from coords    ====   */
+/*    ====    Fetch weather details    ====   */
 function fetchWeatherDetails(weatherURl, forecastURl) {
   showLoader();
-  // let weatherURl = `${BASE}/weather?lat=${lat}&lon=${lng}&appid=${KEY}&units=metric`;
-  // let forecastURl = `${BASE}/forecast?lat=${lat}&lon=${lng}&appid=${KEY}&units=metric`;
 
   Promise.all([fetch(weatherURl), fetch(forecastURl)])
     .then((responses) => Promise.all(responses.map((res) => res.json())))
@@ -66,9 +67,7 @@ function fetchWeatherDetails(weatherURl, forecastURl) {
         throw new Error(forecastData.message);
       }
       hideLoader();
-      // render(cw, fc);
       displayWeatherDetails(weatherData, forecastData);
-      // addRecent(cw.name);
     })
     .catch((err) => {
       hideLoader();
@@ -76,15 +75,20 @@ function fetchWeatherDetails(weatherURl, forecastURl) {
     });
 }
 
-/*  wd = weather data fd= forecast data*/
+/*  wd = weather data  fd = forecast data */
 function displayWeatherDetails(wd, fd) {
   // set city name on search box
   document.getElementById("searchInput").value = wd.name;
+
+  // save to both recent lists
   addRecentCityName(wd.name);
-  //set temp data
+  addAllRecentCities(wd.name);
+
+  // set temp data
   currentTemp = Math.round(wd.main.temp);
   updateTempDisplay();
   checkAlert(currentTemp);
+
   // city and country name
   const parts = wd.name.split(" "),
     last = parts.pop();
@@ -93,12 +97,14 @@ function displayWeatherDetails(wd, fd) {
     `<em class="text-[var(--accent)]">${last}</em>`;
   document.getElementById("city").innerHTML = cityHtml;
   document.getElementById("country").innerText = wd.sys.country;
-  //weather condition icon and text
+
+  // weather condition icon and text
   const code = wd.weather[0].icon;
   document.getElementById("condIcon").textContent = ic(code);
   document.getElementById("condName").textContent =
     wd.weather[0].description.replace(/\b\w/g, (c) => c.toUpperCase());
-  //all the 5 weather conditions
+
+  // weather stats
   document.getElementById("wH").textContent = wd.main.humidity + "%";
   document.getElementById("wW").textContent = wd.wind.speed + " m/s";
   document.getElementById("wF").textContent =
@@ -108,31 +114,28 @@ function displayWeatherDetails(wd, fd) {
     : "—";
   document.getElementById("wP").textContent = wd.main.pressure + " hPa";
 }
-// fetch recent cities
+
+/* ═══════════════════════════════════════
+   RECENT CITIES  (used to show in chip form)
+═══════════════════════════════════════ */
+
 function getRecent() {
   try {
-    return JSON.parse(localStorage.getItem(DbRecent) || "[]");
+    return JSON.parse(localStorage.getItem(recentCities) || "[]");
   } catch {
     return [];
   }
 }
-/* Recent City Name */
+
 function addRecentCityName(city) {
   let recent = getRecent();
-  // remove if city already exists
   recent = recent.filter((c) => c.toLowerCase() !== city.toLowerCase());
-
-  // add city to start
   recent.unshift(city);
-
-  // keep only 8 cities
-  if (recent.length > 8) {
-    recent = recent.slice(0, 8);
-  }
-  localStorage.setItem(DbRecent, JSON.stringify(recent));
+  if (recent.length > 8) recent = recent.slice(0, 8);
+  localStorage.setItem(recentCities, JSON.stringify(recent));
   renderRecent();
 }
-// display recent city name
+
 function renderRecent() {
   const wrapper = document.getElementById("recentWrapper");
   const arr = getRecent();
@@ -145,19 +148,119 @@ function renderRecent() {
   wrapper.innerHTML = arr
     .map(
       (city) => `
-    <div class="recentCityName cursor-pointer" onclick="searchCity('${city.replace(/'/g, "\\'")}')">
-      ${city}
-    </div>
-  `,
+      <div class="recentCityName cursor-pointer"
+           onclick="searchCity('${city.replace(/'/g, "\\'")}')">
+        ${city}
+      </div>`
     )
     .join("");
 }
-/* Toast */
+
+/* ═══════════════════════════════════════
+   ALL RECENT CITIES  (used in dropdown)
+═══════════════════════════════════════ */
+
+function getAllRecentCities() {
+  try {
+    return JSON.parse(localStorage.getItem(allRecentCities) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function addAllRecentCities(city) {
+  let recent = getAllRecentCities();
+  recent = recent.filter((c) => c.toLowerCase() !== city.toLowerCase());
+  recent.unshift(city);
+  localStorage.setItem(allRecentCities, JSON.stringify(recent));
+}
+
+/* ═══════════════════════════════════════
+   DROPDOWN
+═══════════════════════════════════════ */
+
+const cityInput = document.getElementById("searchInput");
+
+// Show all recent cities when input is focused
+cityInput.addEventListener("focus", () => {
+  populateDropdown(getAllRecentCities());
+});
+
+// Filter cities as user types
+cityInput.addEventListener("keyup", (e) => {
+  if (e.key === "Enter") {
+    citySearch();
+    hideDropdown();
+    return;
+  }
+
+  const query = cityInput.value.trim().toLowerCase();
+  const cities = getAllRecentCities();
+
+  if (!query) {
+    populateDropdown(cities);
+    return;
+  }
+
+  const filtered = cities.filter((c) => c.toLowerCase().includes(query));
+  populateDropdown(filtered);
+});
+
+// Hide dropdown when clicking outside input or dropdown
+document.addEventListener("click", (e) => {
+  const dropdown = document.getElementById("dropDownList");
+  if (
+    !cityInput.contains(e.target) &&
+    !dropdown.contains(e.target)
+  ) {
+    hideDropdown();
+  }
+});
+
+// Fill dropdown content then show it
+function populateDropdown(cities) {
+  const dropdown = document.getElementById("dropDownList");
+
+  if (!cities.length) {
+    hideDropdown();
+    return;
+  }
+
+  dropdown.innerHTML = cities
+    .map(
+      (city) => `
+      <div class="dd-item"
+           onclick="searchCity('${city.replace(/'/g, "\\'")}')">
+         ${city}
+      </div>`
+    )
+    .join("");
+
+  showDropdown();
+}
+
+function showDropdown() {
+  document.getElementById("dropDownList").classList.remove("hidden");
+}
+
+function hideDropdown() {
+  document.getElementById("dropDownList").classList.add("hidden");
+}
+
+// Search city from dropdown click or recent chip click
+function searchCity(name) {
+  document.getElementById("searchInput").value = name;
+  hideDropdown();
+  createCityUrl(name);
+}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+
 function showToast(msg) {
   document.getElementById("toastMsg").textContent = msg;
   document.getElementById("toast").classList.remove("hidden");
-
-  // auto hide after 4 seconds
   setTimeout(closeToast, 4000);
 }
 
@@ -165,7 +268,10 @@ function closeToast() {
   document.getElementById("toast").classList.add("hidden");
 }
 
-// rain drop
+/* ═══════════════════════════════════════
+   RAIN
+═══════════════════════════════════════ */
+
 function createRain() {
   const container = document.createElement("div");
   container.classList.add("rain-container");
@@ -174,14 +280,11 @@ function createRain() {
   for (let i = 0; i < 80; i++) {
     const drop = document.createElement("div");
     drop.classList.add("drop");
-
-    // Random position, speed, delay for each drop
     drop.style.left = Math.random() * 100 + "vw";
     drop.style.animationDuration = 0.5 + Math.random() * 1 + "s";
     drop.style.animationDelay = Math.random() * 2 + "s";
     drop.style.opacity = 0.3 + Math.random() * 0.5;
     drop.style.height = 10 + Math.random() * 20 + "px";
-
     container.appendChild(drop);
   }
 
@@ -193,16 +296,10 @@ function removeRain() {
   if (existing) existing.remove();
 }
 
-//searched city name drop down list
-const dropdown = document.getElementById("dropDownList");
+/* ═══════════════════════════════════════
+   LOADER
+═══════════════════════════════════════ */
 
-// show
-dropdown.classList.remove("hidden");
-
-// hide
-dropdown.classList.add("hidden");
-
-// data loader indicator
 function showLoader() {
   document.getElementById("loader").classList.remove("hidden");
 }
@@ -211,13 +308,15 @@ function hideLoader() {
   document.getElementById("loader").classList.add("hidden");
 }
 
-// handle temp unit change
+/* ═══════════════════════════════════════
+   TEMPERATURE UNIT TOGGLE
+═══════════════════════════════════════ */
+
 const btnC = document.getElementById("btnC");
 const btnF = document.getElementById("btnF");
 
 function setUnit(unit) {
   currentUnit = unit;
-
   if (unit === "C") {
     btnC.classList.add("active");
     btnF.classList.remove("active");
@@ -237,7 +336,10 @@ function updateTempDisplay() {
   document.getElementById("tempDisplay").textContent = `${temp}°`;
 }
 
-/* Icon map */
+/* ═══════════════════════════════════════
+   ICON MAP
+═══════════════════════════════════════ */
+
 const IM = {
   "01d": "☀️",
   "01n": "🌙",
@@ -263,11 +365,12 @@ const ic = (c) => IM[c] || "🌡️";
 /* ═══════════════════════════════════════
    CLOCK
 ═══════════════════════════════════════ */
+
 function updateClock() {
   const n = new Date();
   document.getElementById("liveTime").textContent = n.toLocaleTimeString(
     "en-US",
-    { hour12: false },
+    { hour12: false }
   );
   document.getElementById("liveDate").textContent = n
     .toLocaleDateString("en-US", {
@@ -278,15 +381,13 @@ function updateClock() {
     })
     .toUpperCase();
 }
-updateClock();
 setInterval(updateClock, 1000);
 
 /* ═══════════════════════════════════════
-   Alert
+   ALERT BAR
 ═══════════════════════════════════════ */
 
 function checkAlert(tc) {
-  tc = -12;
   const b = document.getElementById("alertBar");
   if (tc >= 40) {
     document.getElementById("alertTxt").textContent =

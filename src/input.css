@@ -11,6 +11,9 @@
   --gradient-1: #e1f4fc;
   --gradient-2: #ccecfa;
   --gradient-3: #7dd3fc;
+  --dd-bg: #e1f4fc;
+  --dd-hover: rgb(201, 235, 250);
+
 }
 body.night-mode {
   --accent: #4fc3f7;
@@ -118,8 +121,8 @@ body.rainy-mode {
   border: none;
 }
 .dd-item:hover {
-  background: rgba(255, 107, 53, 0.07);
-  color: var(--accent);
+  background: var(--dd-hover);
+  color: var(--text);
 }
 
 /* Loader */
