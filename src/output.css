@@ -9,6 +9,8 @@
       "Courier New", monospace;
     --color-red-400: oklch(70.4% 0.191 22.216);
     --color-red-500: oklch(63.7% 0.237 25.331);
+    --color-amber-200: oklch(92.4% 0.12 95.746);
+    --color-amber-300: oklch(87.9% 0.169 91.605);
     --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
@@ -941,6 +943,16 @@ body.rainy-mode {
     transform: translateY(110vh);
   }
 }
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+}
 .recentCityName {
   border-radius: 4rem;
   border: 1px solid var(--card-border);
@@ -1018,15 +1030,23 @@ body.rainy-mode {
   color: var(--accent);
 }
 .weather-stat {
+  display: flex;
+  flex-direction: column;
   border-radius: 20px;
   padding: 10px 20px;
-  background: var(--accent-1);
+  border: 1px solid var(--accent-1);
+  background: var(--card-bg);
   @supports (color: color-mix(in lab, red, red)) {
-    background: color-mix(in srgb, var(--accent-1) 20%, transparent);
+    background: color-mix(in srgb, var(--card-bg) 20%, transparent);
   }
   color: var(--accent-1);
   font-size: medium;
   font-weight: bold;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.weather-stat:hover {
+  transform: translateY(-5px) scale(1.02);
+  background: rgba(255, 255, 255, 0.85);
 }
 @media (max-width: 1024px) {
   .weather-stat {
@@ -1068,6 +1088,16 @@ body.rainy-mode {
   transform: translateY(-5px) scale(1.02);
   background: rgba(255, 255, 255, 0.85);
 }
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .fc-day {
   font-size: 0.75rem;
   font-weight: 600;
@@ -1079,6 +1109,7 @@ body.rainy-mode {
 .fc-icon {
   font-size: 2.5rem;
   margin: 0.25rem 0 0.45rem;
+  line-height: 1;
 }
 .fc-desc {
   font-size: 0.9rem;
@@ -1093,14 +1124,15 @@ body.rainy-mode {
 .fc-divider {
   margin-top: 1.3rem;
   height: 1px;
-  background-image: repeating-linear-gradient( to right, var(--accent-1) 0px, var(--accent-1) 8px,  transparent 8px, transparent 16px  );
+  background-image: repeating-linear-gradient( to right, var(--accent-1) 0px, var(--accent-1) 8px, transparent 8px, transparent 16px );
 }
 .fc-stats {
-  margin-top: 1.3rem;
+  margin-top: 1rem;
   display: flex;
-  gap: 3;
+  gap: 0.5rem;
   flex-direction: column;
   color: var(--text-1);
+  font-size: 0.8rem;
 }
 @property --tw-border-style {
   syntax: "*";

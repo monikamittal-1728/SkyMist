@@ -104,9 +104,13 @@ function displayWeatherDetails(wd, fd) {
   document.getElementById("condName").textContent =
     wd.weather[0].description.replace(/\b\w/g, (c) => c.toUpperCase());
 
+  // apply theme based on weather
+  setTheme( code);
+
   // weather stats
   document.getElementById("wH").textContent = wd.main.humidity + "%";
-  document.getElementById("wW").textContent = wd.wind.speed + " m/s";
+  document.getElementById("wW").textContent =
+    (wd.wind.speed * 3.6).toFixed(1) + " km/h";
   document.getElementById("wF").textContent =
     Math.round(wd.main.feels_like) + "°C";
   document.getElementById("wV").textContent = wd.visibility
@@ -116,6 +120,66 @@ function displayWeatherDetails(wd, fd) {
 
   // render 5-day forecast
   renderForecast(fd);
+}
+
+/* ═══════════════════════════════════════
+   THEME  (day / night / rain)
+═══════════════════════════════════════ */
+
+function setTheme( iconCode) {
+  const body = document.body;
+  const isNight = iconCode.endsWith("n");
+  const isRainy = ["09d", "09n", "10d", "10n", "11d", "11n"].includes(iconCode);
+
+  // remove all modes first
+  body.classList.remove("bg-day", "bg-night", "bg-rain", "night-mode", "rainy-mode");
+  removeRain();
+  removeStars();
+
+  if (isRainy) {
+    body.classList.add("bg-rain", "rainy-mode");
+    createRain();
+  } else if (isNight) {
+    body.classList.add("bg-night", "night-mode");
+    createStars();
+  } else {
+    body.classList.add("bg-day");
+  }
+}
+
+/* ═══════════════════════════════════════
+   STARS
+═══════════════════════════════════════ */
+
+function createStars() {
+  const container = document.createElement("div");
+  container.id = "star-container";
+  container.style.cssText =
+    "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;";
+
+  for (let i = 0; i < 120; i++) {
+    const star = document.createElement("div");
+    const size = Math.random() * 2.5 + 0.5;
+    star.style.cssText = `
+      position:absolute;
+      width:${size}px;
+      height:${size}px;
+      border-radius:50%;
+      background:white;
+      top:${Math.random() * 100}%;
+      left:${Math.random() * 100}%;
+      opacity:${0.3 + Math.random() * 0.7};
+      animation: twinkle ${1.5 + Math.random() * 3}s ease-in-out infinite;
+      animation-delay:${Math.random() * 3}s;
+    `;
+    container.appendChild(star);
+  }
+  document.body.appendChild(container);
+}
+
+function removeStars() {
+  const el = document.getElementById("star-container");
+  if (el) el.remove();
 }
 
 /* ═══════════════════════════════════════
@@ -156,18 +220,17 @@ function renderForecast(fd) {
         month: "short",
       });
 
-      // get emoji icon from icon code e.g. "01d" → "☀️"
+      // get  icon from icon code
       const icon = ic(day.weather[0].icon);
 
       // capitalize each word of description
       const desc = day.weather[0].description.replace(/\b\w/g, (c) =>
         c.toUpperCase(),
       );
-      console.log(day.main);
 
       const tempMax = Math.round(day.main.temp_max);
       const humidity = day.main.humidity;
-      const wind = day.wind.speed;
+      const wind = (day.wind.speed * 3.6).toFixed(1);
 
       return `
         <div class="fc-card">
@@ -178,7 +241,7 @@ function renderForecast(fd) {
           <div class="fc-divider"></div>
           <div class="fc-stats">
             <span>💧 ${humidity}%</span>
-            <span>💨 ${wind} m/s</span>
+            <span>💨 ${wind} km/h</span>
           </div>
         </div>
       `;
@@ -461,13 +524,13 @@ function checkAlert(tc) {
     document.getElementById("alertTxt").textContent =
       `Extreme heat! ${tc}°C — stay hydrated and seek shade immediately.`;
     document.getElementById("alertIcon").textContent = "🔥";
-    b.classList.add("show");
+    b.classList.remove("hidden");
   } else if (tc <= -10) {
     document.getElementById("alertTxt").textContent =
       `Extreme cold! ${tc}°C — dress in layers and limit outdoor exposure.`;
     document.getElementById("alertIcon").textContent = "🥶";
-    b.classList.add("show");
+    b.classList.remove("hidden");
   } else {
-    b.classList.remove("show");
+    b.classList.add("hidden");
   }
 }
