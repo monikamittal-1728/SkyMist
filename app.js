@@ -26,9 +26,9 @@ function myLocation() {
     },
     () => {
       showToast(
-        "Location access denied. Please allow location permissions and try again."
+        "Location access denied. Please allow location permissions and try again.",
       );
-    }
+    },
   );
 }
 
@@ -113,10 +113,81 @@ function displayWeatherDetails(wd, fd) {
     ? (wd.visibility / 1000).toFixed(1) + " km"
     : "—";
   document.getElementById("wP").textContent = wd.main.pressure + " hPa";
+
+  // render 5-day forecast
+  renderForecast(fd);
 }
 
 /* ═══════════════════════════════════════
-   RECENT CITIES  (used to show in chip form)
+   5-DAY FORECAST
+═══════════════════════════════════════ */
+
+function renderForecast(fd) {
+  const grid = document.getElementById("fcGrid");
+
+  // api returns 40 entries (every 3hr)
+  // we pick the best entry per day — prefer noon (12:00:00)
+  const dailyMap = {};
+
+  fd.list.forEach((item) => {
+    const date = item.dt_txt.split(" ")[0]; // "2026-03-12"
+    const hour = item.dt_txt.split(" ")[1]; // "12:00:00"
+
+    // save first entry of the day, overwrite if noon entry found
+    if (!dailyMap[date] || hour === "12:00:00") {
+      dailyMap[date] = item;
+    }
+  });
+
+  // convert object to array and take only 5 days
+  const days = Object.values(dailyMap).slice(0, 5);
+
+  grid.innerHTML = days
+    .map((day) => {
+      // dt is unix timestamp in seconds — JS needs milliseconds so × 1000
+      const date = new Date(day.dt * 1000);
+
+      // format day name: "Wed"
+      const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
+      // format date string: "12 Mar"
+      const dateStr = date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+      });
+
+      // get emoji icon from icon code e.g. "01d" → "☀️"
+      const icon = ic(day.weather[0].icon);
+
+      // capitalize each word of description
+      const desc = day.weather[0].description.replace(/\b\w/g, (c) =>
+        c.toUpperCase(),
+      );
+      console.log(day.main);
+
+      const tempMax = Math.round(day.main.temp_max);
+      const humidity = day.main.humidity;
+      const wind = day.wind.speed;
+
+      return `
+        <div class="fc-card">
+          <div class="fc-day">${dayName} ${dateStr}</div>
+          <div class="fc-icon">${icon}</div>
+          <div class="fc-max">${tempMax}° C</div>
+          <div class="fc-desc">${desc}</div>
+          <div class="fc-divider"></div>
+          <div class="fc-stats">
+            <span>💧 ${humidity}%</span>
+            <span>💨 ${wind} m/s</span>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+/* ═══════════════════════════════════════
+   RECENT CITIES  (chips below search)
 ═══════════════════════════════════════ */
 
 function getRecent() {
@@ -151,7 +222,7 @@ function renderRecent() {
       <div class="recentCityName cursor-pointer"
            onclick="searchCity('${city.replace(/'/g, "\\'")}')">
         ${city}
-      </div>`
+      </div>`,
     )
     .join("");
 }
@@ -209,10 +280,7 @@ cityInput.addEventListener("keyup", (e) => {
 // Hide dropdown when clicking outside input or dropdown
 document.addEventListener("click", (e) => {
   const dropdown = document.getElementById("dropDownList");
-  if (
-    !cityInput.contains(e.target) &&
-    !dropdown.contains(e.target)
-  ) {
+  if (!cityInput.contains(e.target) && !dropdown.contains(e.target)) {
     hideDropdown();
   }
 });
@@ -231,8 +299,8 @@ function populateDropdown(cities) {
       (city) => `
       <div class="dd-item"
            onclick="searchCity('${city.replace(/'/g, "\\'")}')">
-         ${city}
-      </div>`
+        <span class="dd-icon">🕐</span> ${city}
+      </div>`,
     )
     .join("");
 
@@ -370,7 +438,7 @@ function updateClock() {
   const n = new Date();
   document.getElementById("liveTime").textContent = n.toLocaleTimeString(
     "en-US",
-    { hour12: false }
+    { hour12: false },
   );
   document.getElementById("liveDate").textContent = n
     .toLocaleDateString("en-US", {

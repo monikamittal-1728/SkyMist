@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="src/output.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Pacifico&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap&family=Roboto+Slab:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <title>SkyMist — Weather Forecast</title>
+  </head>
+  <body class="bg-day">
+    <div
+      class="relative z-2 max-w-[1100px] m-auto px-2.5 py-1.5 min-h-[100vh] mt-15"
+    >
+      <!-- header with website name , tagline, date and curent time -->
+      <header
+        class="w-full flex flex-col md:flex-row md:justify-between md:items-baseline-last"
+      >
+        <div>
+          <div
+            class="pacifico-regular text-4xl md:text-2xl lg:text-3xl"
+            id="name"
+          >
+            <em class="text-[var(--accent)]">Sky</em>Mist
+          </div>
+          <div
+            class="uppercase text-[var(--muted)] mt-2 tracking-[.25em] font-semibold text-xs md:text-xs lg:text-sm transition-colors duration-700"
+          >
+            Your sky, at a Glance
+          </div>
+        </div>
+        <div class="flex flex-col items-end justify-center">
+          <div
+            class="font-playfair text-[var(--text)] transition-colors duration-700 text-xl md:text-lg lg:text-xl"
+          >
+            01:04:02
+          </div>
+          <div
+            class="mt-0.5 tracking-[2px] uppercase text-[var(--text-1)] transition-colors duration-700 text-[10px] md:text-xs lg:text-sm"
+          >
+            sMONDAY, 09 march 2026
+          </div>
+          <!-- remove dummy content from here -->
+        </div>
+      </header>
+
+      <!-- serach box with search and location button recent city seacrhed and drop down menu -->
+      <div
+        class="bg-[var(--card-bg)] mt-10 rounded-2xl inset-shadow-sm px-5 py-10 border-2 border-[var(--card-border)]"
+      >
+        <!-- input box and drop down wrapper -->
+        <div class="relative">
+          <input
+            class="w-full bg-transparent border-none outline-none font-playfair text-[var(--text)] text-xl caret-[var(--accent)] transition-colors duration-700"
+            id="searchInput"
+            type="text"
+            placeholder="Search any city in the world…"
+            autocomplete="off"
+          />
+          <div
+            id="dropDownList"
+            class="hidden absolute left-0 right-0 top-full mt-2 z-50 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md"
+          >
+            <!-- Will injects items here to display in list -->
+          </div>
+        </div>
+
+        <div class="h-[1px] bg-[var(--card-border)] mt-1"></div>
+
+        <!-- buttons and recent wrapper -->
+        <div class="flex flex-row gap-2 flex-wrap items-center mt-5">
+          <!-- Search + Location buttons stay in one row -->
+          <div class="flex gap-2">
+            <button
+              class="bg-[var(--accent)] text-white py-2 px-4 rounded-xl font-outfit text-sm cursor-pointer tracking-wide transition-all duration-200 ease-in-out hover:scale-105 hover:bg-[var(--accent-1)]"
+            >
+              <i class="fa-solid fa-magnifying-glass"></i> Search
+            </button>
+            <button
+              class="bg-transparent text-[var(--accent)] py-[7px] px-4 rounded-xl border-2 border-[var(--accent)] font-outfit text-sm cursor-pointer tracking-wide transition-all duration-200 ease-in-out hover:text-[var(--accent-1)] hover:border-[var(--accent-1)] hover:bg-[var(--gradient-1)] hover:scale-105"
+            >
+              <i class="fa-solid fa-crosshairs"></i> My Location
+            </button>
+          </div>
+
+          <!-- Recent wrapper — full width on mobile, pushes to next row -->
+          <div
+            id="recentWrapper"
+            class="flex flex-row gap-2 w-full md:w-auto md:flex-1 md:justify-end flex-wrap p-2"
+          >
+            <!-- Will injects recent city name here -->
+            <div class="recentCityName">Mumbai</div>
+            <div class="recentCityName">Delhi</div>
+            <div class="recentCityName">Panipat</div>
+            <div class="recentCityName">Panipat</div>
+            <div class="recentCityName">Mumbai</div>
+            <div class="recentCityName">Delhi</div>
+            <div class="recentCityName">Panipat</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- weather alert section -->
+      <div
+        id="alertBar"
+        class="bg-gradient-to-br from-[#f2cce1] to-[#e7d5df] mt-10 rounded-2xl inset-shadow-sm px-5 py-4 10 border border-[var(--accent)]"
+      >
+        <span class="text-lg" id="alertIcon">⚠️</span>
+        <span class="text-[var(--accent)] font-medium" id="alertTxt">
+          Showing weather alert here!</span
+        >
+      </div>
+
+      <!-- Current weather section: shows city details, temperature, and unit toggle -->
+      <div class="mt-8">
+        <!-- top section -->
+        <div class="flex flex-col justify-between items-start lg:flex-row">
+          <!-- city and country name -->
+          <div class="flex items-center gap-2">
+            <span class="font-playfair text-[var(--text)] text-4xl lg:text-7xl"
+              >New<em class="text-[var(--accent)]">York</em></span
+            >
+            <span
+              class="font-roboto text-lg lg:text-2xl text-[var(--muted)] font-bold"
+              >sdsus</span
+            >
+          </div>
+
+          <!-- weather temp and unit toggle -->
+          <div class="flex flex-col">
+            <div class="flex flex-row gap-4 justify-between items-center">
+              <!-- left: icon + condition -->
+              <div class="flex gap-2 items-center">
+                <div class="text-4xl" id="condIcon">☀️</div>
+                <div
+                  class="font-playfair text-2xl transition-colors duration-700"
+                  id="condName"
+                >
+                  Sunny
+                </div>
+              </div>
+
+              <!-- right: temperature -->
+              <div
+                class="font-playfair font-extrabold text-[var(--text)] text-8xl transition-colors duration-700"
+                id="tempDisplay"
+              >
+                97°
+              </div>
+            </div>
+            <div class="flex mt-3 justify-end gap-3">
+              <button
+                id="btnC"
+                onclick="setUnit('C')"
+                class="u-btn active py-1 px-3 rounded-2xl text-sm"
+              >
+                °C
+              </button>
+
+              <button
+                id="btnF"
+                onclick="setUnit('F')"
+                class="u-btn py-1 px-3 rounded-2xl text-sm"
+              >
+                °F
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- weather condition section -->
+        <div
+          class="flex gap-2 items-center justify-evenly bg-transparent mt-10"
+        >
+          <div class="weather-stat">
+            <i class="fa-brands fa-drupal"></i> 6% Humidity
+          </div>
+          <div class="weather-stat">
+            <i class="fa-solid fa-wind"></i> 4.55 m/s Wind
+          </div>
+          <div class="weather-stat">
+            <i class="fa-solid fa-temperature-half"></i> 34 c Feels
+          </div>
+          <div class="weather-stat">
+            <i class="fa-regular fa-eye"></i> 10.0 km Visibility
+          </div>
+          <div class="weather-stat">
+            <i class="fa-solid fa-bolt"></i> 1010 hPa Pressure
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- loader when we fetch data from api -->
+    <div
+      id="loader"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs bg-black/20"
+    >
+      <div class="flex flex-col items-center gap-3">
+        <!-- Spinner -->
+        <div
+          class="w-12 h-12 rounded-full border-4 border-[var(--card-border)] border-t-[var(--accent)] animate-spin"
+        ></div>
+        <!-- Text -->
+        <p
+          class="text-[var(--text)] font-outfit text-sm tracking-widest uppercase transition-colors duration-700"
+        >
+          Fetching sky data…
+        </p>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

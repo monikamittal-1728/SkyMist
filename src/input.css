@@ -13,7 +13,6 @@
   --gradient-3: #7dd3fc;
   --dd-bg: #e1f4fc;
   --dd-hover: rgb(201, 235, 250);
-
 }
 body.night-mode {
   --accent: #4fc3f7;
@@ -237,4 +236,46 @@ body.rainy-mode {
 .fc-card:hover {
   transform: translateY(-5px) scale(1.02);
   background: rgba(255, 255, 255, 0.85);
+}
+
+.fc-day {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.fc-icon {
+  font-size: 2.5rem;
+  margin: 0.25rem 0 0.45rem;
+}
+
+.fc-desc {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.fc-max {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.fc-divider {
+  margin-top: 1.3rem;
+  height: 1px;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--accent-1) 0px,
+   var(--accent-1) 8px,       /* dash length */
+    transparent 8px,
+    transparent 16px /* gap length */
+  );
+}
+.fc-stats {
+  margin-top: 1.3rem;
+  display: flex;
+  gap: 3;
+  flex-direction: column;
+  color: var(--text-1);
 }
